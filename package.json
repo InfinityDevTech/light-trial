@@ -2,13 +2,18 @@
   "name": "light-trial",
   "version": "1.0.0",
   "description": "",
-  "main": "build/main.js",
+  "main": "src/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node ./src/main.js"
   },
   "author": "InfinityDev",
   "license": "ISC",
   "dependencies": {
+    "eris": "^0.17.2",
+    "mongoose": "^7.4.2",
+    "pino": "^8.15.0",
+    "pino-pretty": "^10.2.0",
     "typescript": "^5.1.6"
   }
 }
