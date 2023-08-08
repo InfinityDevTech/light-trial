@@ -1,3 +1,5 @@
+import { Model } from "mongoose";
+
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -6,9 +8,11 @@ const Logger = require('./../logger');
 const basename = path.basename(module.filename);
 const modelPath = path.join(__dirname, 'models');
 
-class DataFactory {
-	constructor(options) {
-		this.logger = new Logger(options.logger || {});
+export default class DataFactory {
+	logger: any;
+	private _models: any;
+	constructor(options: any) {
+		this.logger = new Logger.Logger(options.logger || {});
 		this._models = {};
 
 		this.logger.info('Connecting to mongodb...');
@@ -29,13 +33,13 @@ class DataFactory {
 		const connection = mongoose.connection;
 
 
-		connection.on('error', (e) => this.logger.error(e));
+		connection.on('error', (e: any) => this.logger.error(e));
 		connection.once('open', () => this.logger.info('Connected to mongo.'));
 
 		fs
 			.readdirSync(modelPath)
-			.filter(file => (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js'))
-			.forEach(file => {
+			.filter((file: any) => (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js'))
+			.forEach((file: File) => {
 				const model = require(path.join(modelPath, file));
 				this.registerModel(model);
 			});
@@ -53,7 +57,7 @@ class DataFactory {
 		return mongoose.connection;
 	}
 
-	collection(...args) {
+	collection(...args: any) {
 		return mongoose.connection.collection(...args);
 	}
 
@@ -61,7 +65,7 @@ class DataFactory {
 		return mongoose.Schema;
 	}
 
-	registerModel({name, schema}) {
+	registerModel({name, schema}: any) {
 		const model = mongoose.model(name, schema);
 		this._models[model.modelName] = model;
 	}
