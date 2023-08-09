@@ -4,10 +4,11 @@ import Events from "../events";
 
 function command(interaction: CommandInteraction, db: Mongoose, events: Events) {
     let guild: any = interaction.guildID;
-    let rankings = db.models["User"].find({ "servers.serverId": guild }).sort({ messages: -1 }).limit(10).exec()
+    let rankings = db.models["User"].find({ "servers.serverId": guild }).sort({ "servers": -1 }).limit(10).exec()
     .then((data) => {
         let fields: any = [];
         let i = 0;
+        let data2 = data.sort((a: any, b: any) => b.servers.find((e: any) => e.serverId == guild).messageCount - a.servers.find((e: any) => e.serverId == guild).messageCount);
         data.forEach((user: any) => {
             let server = user.servers.find((server: any) => server.serverId == guild);
             let member = events.client.guilds.get(guild)?.members.get(user.id);

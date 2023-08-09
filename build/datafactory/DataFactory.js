@@ -1,36 +1,33 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const mongoose_1 = __importDefault(require("mongoose"));
-const logger_1 = __importDefault(require("./../logger"));
-const basename = path_1.default.basename(module.filename);
-const modelPath = path_1.default.join(__dirname, 'models');
+const fs = require('fs');
+const path = require('path');
+const mongoose = require('mongoose');
+const Logger = require('./../logger');
+const basename = path.basename(module.filename);
+const modelPath = path.join(__dirname, 'models');
 class DataFactory {
     constructor(options) {
-        //@ts-ignore
-        this.logger = new logger_1.default(options.logger || {});
+        this.logger = new Logger.Logger(options.logger || {});
         this._models = {};
         this.logger.info('Connecting to mongodb...');
-        mongoose_1.default.Promise = global.Promise;
+        this.logger.debug('dbString: ' + options.dbString);
+        mongoose.Promise = global.Promise;
         const connectOpts = options.connectOps || {
             useNewUrlParser: true,
         };
-        if (!options.disableReplica) {
-            connectOpts.replicaSet = 'light';
-        }
-        mongoose_1.default.connect(options.dbString, connectOpts);
-        const connection = mongoose_1.default.connection;
-        connection.on('error', this.logger.error);
+        //if (!options.disableReplica) {
+        //	connectOpts.replicaSet = 'light';
+        //}
+        mongoose.connect(options.dbString, connectOpts);
+        const connection = mongoose.connection;
+        connection.on('error', (e) => this.logger.error(e));
         connection.once('open', () => this.logger.info('Connected to mongo.'));
-        fs_1.default
+        fs
             .readdirSync(modelPath)
             .filter((file) => (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js'))
             .forEach((file) => {
-            const model = require(path_1.default.join(modelPath, file));
+            const model = require(path.join(modelPath, file));
             this.registerModel(model);
         });
     }
@@ -38,20 +35,21 @@ class DataFactory {
         return this._models;
     }
     get mongoose() {
-        return mongoose_1.default;
+        return mongoose;
     }
     get connection() {
-        return mongoose_1.default.connection;
+        return mongoose.connection;
     }
     collection(...args) {
-        return mongoose_1.default.connection.collection(...args);
+        return mongoose.connection.collection(...args);
     }
     get Schema() {
-        return mongoose_1.default.Schema;
+        return mongoose.Schema;
     }
     registerModel({ name, schema }) {
-        const model = mongoose_1.default.model(name, schema);
+        const model = mongoose.model(name, schema);
         this._models[model.modelName] = model;
     }
 }
+exports.default = DataFactory;
 module.exports = DataFactory;
